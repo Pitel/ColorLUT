@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 #include <SDL.h>
-#include <SDL_opengl.h>
+#include <GLee.h>
 
 int main() {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -27,5 +27,4 @@ int main() {
 		}
 	}
 	SDL_Quit();
-	exit();
 }
