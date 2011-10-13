@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 #include <SDL.h>
-#include <GLee.h>
+#include <GL/glew.h>
 
 int main() {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -16,6 +16,9 @@ int main() {
 	}
 	
 	SDL_WM_SetCaption("colorLUT", NULL);
+	
+	glewInit();
+	printf("Using GLEW Version %s\n", glewGetString(GLEW_VERSION));
 	
 	bool done = false;
 	SDL_Event event;
