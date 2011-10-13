@@ -18,12 +18,10 @@ int main() {
 	SDL_WM_SetCaption("colorLUT", NULL);
 	
 	bool done = false;
-	while (!done) {
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
-				done = true;
-			}
+	SDL_Event event;
+	while (!done && SDL_WaitEvent(&event)) {
+		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
+			done = true;
 		}
 	}
 	SDL_Quit();
