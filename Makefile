@@ -11,4 +11,4 @@ clean:
 	$(RM) colorLUT *.zip
 
 pack:
-	zip -9 xlogin00.zip *.c Makefile
+	zip -9 xlogin00.zip *.c *.fs *.vs Makefile
