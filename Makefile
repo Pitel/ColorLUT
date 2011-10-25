@@ -1,5 +1,5 @@
 CFLAGS=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-pointer -std=gnu99 `sdl-config --cflags`
-LDFLAGS=`sdl-config --libs` -lGLEW
+LDLIBS=`sdl-config --libs` -lGLEW
 
 all: colorLUT
 
