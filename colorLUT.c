@@ -47,9 +47,9 @@ void shaderlog(GLuint obj) {
 	}
 }
 
-const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
 /* The main drawing function. */
 void DrawGLScene() {
+	static const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_SHORT, 0, vertices);
