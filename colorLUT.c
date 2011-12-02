@@ -47,26 +47,19 @@ void shaderlog(GLuint obj) {
 	}
 }
 
-
-
-const float points[][2] = {{-1,1}, {1,1}, {1,-1}, {-1,-1}};
-GLuint positionAttrib;
-GLuint pointsVBO;
+float vertices[8] = {-1,1, 1,1, 1,-1, -1,-1};
 
 /* The main drawing function. */
 void DrawGLScene()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Enable position attribute
-    glEnableVertexAttribArray(positionAttrib);
+	glEnableClientState(GL_VERTEX_ARRAY);
 
-    // Bind VBO and set pointer
-    glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
-    glVertexAttribPointer(positionAttrib, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexPointer(2,GL_FLOAT,0,vertices);
 
     // Draw points
-    glDrawArrays(GL_QUADS, 0, sizeof(points)/sizeof(*points));
+    glDrawArrays(GL_QUADS, 0, 8);
 
     SDL_GL_SwapBuffers();
 }
@@ -119,19 +112,6 @@ int main() {
 	glAttachShader(program, fs);
 	glLinkProgram(program);
 	shaderlog(program);
-
-
-    // Get location of the "position" attribute
-    positionAttrib = glGetAttribLocation(program, "position");
-
-    // Copy points to graphics card
-    glGenBuffers(1, &pointsVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-
-    // Get location of the "position" attribute
-    positionAttrib = glGetAttribLocation(program, "position");
-
 
 	glUseProgram(program);
 
