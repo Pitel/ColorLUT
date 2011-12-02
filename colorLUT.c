@@ -76,19 +76,31 @@ void DrawGLScene()
 int main() {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
-		exit(1);
+		return EXIT_FAILURE;
 	}
 
 	if (SDL_SetVideoMode(800, 600, 0, SDL_OPENGL) == NULL) {
 		fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
 		SDL_Quit();
-		exit(2);
+		return EXIT_FAILURE;
 	}
 
 	SDL_WM_SetCaption("colorLUT", NULL);
 
-	glewInit();
+	GLenum err = glewInit();
+	if (err != GLEW_OK) {
+		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+		SDL_Quit();
+		return EXIT_FAILURE;
+	}
+
 	printf("Using GLEW Version %s\n", glewGetString(GLEW_VERSION));
+
+	if (!GLEW_VERSION_2_0) {
+		fprintf(stderr, "This machine sucks and does not support OpenGL 2.0!\n");
+		SDL_Quit();
+		return EXIT_FAILURE;
+	}
 
 	const char* vs_src = file2string("colorLUT.vs");
 	GLuint vs = glCreateShader(GL_VERTEX_SHADER_ARB);

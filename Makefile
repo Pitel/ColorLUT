@@ -7,6 +7,9 @@ all: colorLUT
 
 colorLUT:
 
+run: colorLUT
+	./colorLUT || LIBGL_ALWAYS_SOFTWARE=1 ./colorLUT
+
 clean:
 	$(RM) colorLUT *.zip
 
