@@ -1,7 +1,7 @@
 #include <stdbool.h>
-
 #include <SDL.h>
 #include <GL/glew.h>
+
 
 char *file2string(const char *path) {
 	FILE *fd;
@@ -28,65 +28,107 @@ char *file2string(const char *path) {
 void shaderlog(GLuint obj) {
 	int infologLength = 0;
 	int maxLength;
-	
+
 	if(glIsShader(obj)) {
 		glGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 	} else {
 		glGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 	}
 	char infoLog[maxLength];
-	
+
 	if (glIsShader(obj)) {
 		glGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
 	} else {
 		glGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
 	}
-	
+
 	if (infologLength > 0) {
 		printf("%s\n", infoLog);
 	}
 }
+
+
+
+const float points[][2] = {{-1,1}, {1,1}, {1,-1}, {-1,-1}};
+GLuint positionAttrib;
+GLuint pointsVBO;
+
+/* The main drawing function. */
+void DrawGLScene()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Enable position attribute
+    glEnableVertexAttribArray(positionAttrib);
+
+    // Bind VBO and set pointer
+    glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
+    glVertexAttribPointer(positionAttrib, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    // Draw points
+    glDrawArrays(GL_QUADS, 0, sizeof(points)/sizeof(*points));
+
+    SDL_GL_SwapBuffers();
+}
+
+
 
 int main() {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
 		exit(1);
 	}
-	
+
 	if (SDL_SetVideoMode(800, 600, 0, SDL_OPENGL) == NULL) {
 		fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
 		SDL_Quit();
 		exit(2);
 	}
-	
+
 	SDL_WM_SetCaption("colorLUT", NULL);
-	
+
 	glewInit();
 	printf("Using GLEW Version %s\n", glewGetString(GLEW_VERSION));
-	
+
 	const char* vs_src = file2string("colorLUT.vs");
 	GLuint vs = glCreateShader(GL_VERTEX_SHADER_ARB);
 	glShaderSource(vs, 1, &vs_src, NULL);
 	glCompileShader(vs);
 	shaderlog(vs);
-	
+
 	const char* fs_src = file2string("colorLUT.fs");
 	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER_ARB);
 	glShaderSource(fs, 1, &fs_src, NULL);
 	glCompileShader(fs);
 	shaderlog(fs);
-	
+
 	GLuint program = glCreateProgram();
 	glAttachShader(program, vs);
 	glAttachShader(program, fs);
 	glLinkProgram(program);
 	shaderlog(program);
-	
+
+
+    // Get location of the "position" attribute
+    positionAttrib = glGetAttribLocation(program, "position");
+
+    // Copy points to graphics card
+    glGenBuffers(1, &pointsVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, pointsVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+
+    // Get location of the "position" attribute
+    positionAttrib = glGetAttribLocation(program, "position");
+
+
 	glUseProgram(program);
-	
+
 	bool done = false;
 	SDL_Event event;
 	while (!done && SDL_WaitEvent(&event)) {
+
+        DrawGLScene();
+
 		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
 			done = true;
 		}

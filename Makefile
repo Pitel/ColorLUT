@@ -1,5 +1,5 @@
-CFLAGS=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-pointer -std=gnu99 `sdl-config --cflags`
-LDLIBS=`sdl-config --libs` -lGLEW
+CFLAGS=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-pointer -std=gnu99 `sdl-config --cflags` `pkg-config --cflags glew gl`
+LDLIBS=`sdl-config --libs` `pkg-config --libs glew gl` #-lGLEW
 
 all: colorLUT
 
