@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
 	glBindTexture(GL_TEXTURE0, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, texture_format, GL_UNSIGNED_BYTE, surface->pixels);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-	glUniform2f(glGetUniformLocation(program, "resolution"), surface->w, surface->w);
+	glUniform2f(glGetUniformLocation(program, "resolution"), surface->w, surface->h);
 	
 	//Geometry
 	glEnableClientState(GL_VERTEX_ARRAY);
