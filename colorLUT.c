@@ -126,14 +126,15 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE0, texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, texture_format, GL_UNSIGNED_BYTE, surface->pixels);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
 	glUniform2f(glGetUniformLocation(program, "resolution"), surface->w, surface->h);
 	
 	//Geometry
-	glEnableClientState(GL_VERTEX_ARRAY);
-	static const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
+	glEnable(GL_VERTEX_ARRAY);
+	const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
 	glVertexPointer(2, GL_SHORT, 0, vertices);
 	
 	//Draw
