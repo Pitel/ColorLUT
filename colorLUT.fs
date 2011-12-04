@@ -2,7 +2,7 @@
 
 uniform vec2 resolution;
 uniform sampler2D tex;
-uniform sampler2D lut;	//TODO
+uniform sampler2D lut;
 
 void main() {
 	vec2 q = gl_FragCoord.xy / resolution;
