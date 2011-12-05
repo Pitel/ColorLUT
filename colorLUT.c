@@ -81,20 +81,10 @@ void lut(char* lutpath) {
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, lut->format->BytesPerPixel, lut->w, lut->h, 0, format, GL_UNSIGNED_BYTE, lut->pixels);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SDL_FreeSurface(lut);
-	
-	//Geometry
-	glEnable(GL_VERTEX_ARRAY);
-	const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
-	glVertexPointer(2, GL_SHORT, 0, vertices);
-	
-	//Draw
-	glClear(GL_COLOR_BUFFER_BIT);
-	glDrawArrays(GL_QUADS, 0, 8);
 }
 
 int main(int argc, char **argv) {
@@ -178,14 +168,20 @@ int main(int argc, char **argv) {
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glActiveTexture(GL_TEXTURE1);
-	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-	glUniform1i(glGetUniformLocation(program, "lut"), 1);
 	glUniform2f(glGetUniformLocation(program, "resolution"), surface->w, surface->h);
+	SDL_FreeSurface(surface);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glUniform1i(glGetUniformLocation(program, "tex"), 0);
+	glActiveTexture(GL_TEXTURE1);
+	glUniform1i(glGetUniformLocation(program, "lut"), 1);
 	
-	int lutindex = 2;
+	//Geometry
+	glEnable(GL_VERTEX_ARRAY);
+	const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
+	glVertexPointer(2, GL_SHORT, 0, vertices);
+	
 	//Event loop
+	int lutindex = 2;
 	SDL_Event event;
 	while (SDL_WaitEvent(&event)) {
 		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
@@ -198,8 +194,8 @@ int main(int argc, char **argv) {
 		}
 		printf("LUT: %s\n", argv[lutindex]);
 		lut(argv[lutindex]);
+		glDrawArrays(GL_QUADS, 0, 8);
 		SDL_GL_SwapBuffers();
 	}
-	SDL_FreeSurface(surface);
 	SDL_Quit();
 }
