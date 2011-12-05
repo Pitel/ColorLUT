@@ -1,14 +1,11 @@
 CFLAGS=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-pointer -std=gnu99 `sdl-config --cflags` `pkg-config --cflags glew gl SDL_image`
-LDLIBS=`sdl-config --libs` `pkg-config --libs glew gl SDL_image` #-lGLEW
+LDLIBS=`sdl-config --libs` `pkg-config --libs glew gl SDL_image`
 
 all: colorLUT
 
 .PHONY: clean pack
 
 colorLUT:
-
-run: colorLUT
-	./colorLUT || LIBGL_ALWAYS_SOFTWARE=1 ./colorLUT
 
 clean:
 	$(RM) colorLUT *.zip
