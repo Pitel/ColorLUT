@@ -185,11 +185,6 @@ int main(int argc, char **argv) {
 	glUniform2f(glGetUniformLocation(program, "resolution"), surface->w, surface->h);
 	
 	int lutindex = 2;
-	/*
-	lut(argv[lutindex], program);
-	SDL_GL_SwapBuffers();
-	*/
-	
 	//Event loop
 	SDL_Event event;
 	while (SDL_WaitEvent(&event)) {
