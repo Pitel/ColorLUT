@@ -47,10 +47,62 @@ void shaderlog(GLuint obj) {
 	}
 }
 
+void lut(char* lutpath, GLuint shader) {
+	GLuint texture, format;
+	
+	//LUT
+	SDL_Surface * lutimage = IMG_Load(lutpath);
+	if (lutimage == NULL) {
+		fprintf(stderr, "Unable to load LUT %s!\n", lutpath);
+		SDL_Quit();
+		exit(EXIT_FAILURE);
+	}
+	SDL_Surface * lut = SDL_CreateRGBSurface(lutimage->flags, 256, 16, lutimage->format->BitsPerPixel, lutimage->format->Rmask, lutimage->format->Gmask, lutimage->format->Bmask, lutimage->format->Amask);
+	SDL_Rect rect = {0, 0, 256, 16};
+	SDL_BlitSurface(lutimage, &rect, lut, NULL);
+	SDL_FreeSurface(lutimage);
+	if (lut->format->BytesPerPixel == 4) {
+		if (lut->format->Rmask == 0x000000ff) {
+			format = GL_RGBA;
+		} else {
+			format = GL_BGRA;
+		}
+	} else if (lut->format->BytesPerPixel == 3) {
+		if (lut->format->Rmask == 0x000000ff) {
+			format = GL_RGB;
+		} else {
+			format = GL_BGR;
+		}
+	} else {
+		fprintf(stderr, "The image is not truecolor!\n");
+		SDL_Quit();
+		exit(EXIT_FAILURE);
+	}
+	glActiveTexture(GL_TEXTURE1);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, lut->format->BytesPerPixel, lut->w, lut->h, 0, format, GL_UNSIGNED_BYTE, lut->pixels);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glUniform1i(glGetUniformLocation(shader, "lut"), 1);
+	SDL_FreeSurface(lut);
+	
+	//Geometry
+	glEnable(GL_VERTEX_ARRAY);
+	const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
+	glVertexPointer(2, GL_SHORT, 0, vertices);
+	
+	//Draw
+	glClear(GL_COLOR_BUFFER_BIT);
+	glDrawArrays(GL_QUADS, 0, 8);
+}
+
 int main(int argc, char **argv) {
 	//Help
 	if (argc < 3) {
-		printf("Usage: colorLUT <image> <LUT>");
+		printf("Usage: colorLUT <image> <LUT>...\n");
 		return EXIT_FAILURE;
 	}
 	
@@ -107,18 +159,18 @@ int main(int argc, char **argv) {
 	glUseProgram(program);
 	
 	//Texture
-	GLuint texture_format, texture;
+	GLuint texture, format;
 	if (surface->format->BytesPerPixel == 4) {
 		if (surface->format->Rmask == 0x000000ff) {
-			texture_format = GL_RGBA;
+			format = GL_RGBA;
 		} else {
-			texture_format = GL_BGRA;
+			format = GL_BGRA;
 		}
 	} else if (surface->format->BytesPerPixel == 3) {
 		if (surface->format->Rmask == 0x000000ff) {
-			texture_format = GL_RGB;
+			format = GL_RGB;
 		} else {
-			texture_format = GL_BGR;
+			format = GL_BGR;
 		}
 	} else {
 		fprintf(stderr, "The image is not truecolor!\n");
@@ -127,69 +179,32 @@ int main(int argc, char **argv) {
 	}
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, texture_format, GL_UNSIGNED_BYTE, surface->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
 	glUniform2f(glGetUniformLocation(program, "resolution"), surface->w, surface->h);
-	SDL_FreeSurface(surface);
 	
-	//LUT
-	SDL_Surface * lutimage = IMG_Load(argv[2]);
-	if (surface == NULL) {
-		fprintf(stderr, "Unable to load LUT %s!\n", argv[1]);
-		SDL_Quit();
-		return EXIT_FAILURE;
-	}
-	SDL_Surface * lut = SDL_CreateRGBSurface(lutimage->flags, 256, 16, lutimage->format->BitsPerPixel, lutimage->format->Rmask, lutimage->format->Gmask, lutimage->format->Bmask, lutimage->format->Amask);
-	SDL_Rect rect = {0, 0, 256, 16};
-	SDL_BlitSurface(lutimage, &rect, lut, NULL);
-	SDL_FreeSurface(lutimage);
-	if (lut->format->BytesPerPixel == 4) {
-		if (lut->format->Rmask == 0x000000ff) {
-			texture_format = GL_RGBA;
-		} else {
-			texture_format = GL_BGRA;
-		}
-	} else if (lut->format->BytesPerPixel == 3) {
-		if (lut->format->Rmask == 0x000000ff) {
-			texture_format = GL_RGB;
-		} else {
-			texture_format = GL_BGR;
-		}
-	} else {
-		fprintf(stderr, "The image is not truecolor!\n");
-		SDL_Quit();
-		return EXIT_FAILURE;
-	}
-	glActiveTexture(GL_TEXTURE1);
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, lut->format->BytesPerPixel, lut->w, lut->h, 0, texture_format, GL_UNSIGNED_BYTE, lut->pixels);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glUniform1i(glGetUniformLocation(program, "lut"), 1);
-	SDL_FreeSurface(lut);
-	
-	//Geometry
-	glEnable(GL_VERTEX_ARRAY);
-	const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
-	glVertexPointer(2, GL_SHORT, 0, vertices);
-	
-	//Draw
-	glClear(GL_COLOR_BUFFER_BIT);
-	glDrawArrays(GL_QUADS, 0, 8);
+	int lutindex = 2;
+	/*
+	lut(argv[lutindex], program);
 	SDL_GL_SwapBuffers();
+	*/
 	
 	//Event loop
-	bool done = false;
 	SDL_Event event;
-	while (!done && SDL_WaitEvent(&event)) {
-		//putchar('.');
+	while (SDL_WaitEvent(&event)) {
 		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
-			done = true;
+			break;
+		} else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE) {
+			lutindex++;
+			if (lutindex >= argc) {
+				lutindex = 2;
+			}
 		}
+		printf("LUT: %s\n", argv[lutindex]);
+		lut(argv[lutindex], program);
+		SDL_GL_SwapBuffers();
 	}
+	SDL_FreeSurface(surface);
 	SDL_Quit();
 }
