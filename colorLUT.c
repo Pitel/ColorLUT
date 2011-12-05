@@ -47,7 +47,7 @@ void shaderlog(GLuint obj) {
 	}
 }
 
-void lut(char* lutpath, GLuint shader) {
+void lut(char* lutpath) {
 	GLuint texture, format;
 	
 	//LUT
@@ -78,7 +78,6 @@ void lut(char* lutpath, GLuint shader) {
 		SDL_Quit();
 		exit(EXIT_FAILURE);
 	}
-	glActiveTexture(GL_TEXTURE1);
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, lut->format->BytesPerPixel, lut->w, lut->h, 0, format, GL_UNSIGNED_BYTE, lut->pixels);
@@ -86,7 +85,6 @@ void lut(char* lutpath, GLuint shader) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	glUniform1i(glGetUniformLocation(shader, "lut"), 1);
 	SDL_FreeSurface(lut);
 	
 	//Geometry
@@ -181,7 +179,9 @@ int main(int argc, char **argv) {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
 	glGenerateMipmap(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE1);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
+	glUniform1i(glGetUniformLocation(program, "lut"), 1);
 	glUniform2f(glGetUniformLocation(program, "resolution"), surface->w, surface->h);
 	
 	int lutindex = 2;
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
 			}
 		}
 		printf("LUT: %s\n", argv[lutindex]);
-		lut(argv[lutindex], program);
+		lut(argv[lutindex]);
 		SDL_GL_SwapBuffers();
 	}
 	SDL_FreeSurface(surface);
