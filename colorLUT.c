@@ -183,7 +183,8 @@ int main(int argc, char **argv) {
 	//Event loop
 	int lutindex = 2;
 	SDL_Event event;
-	while (SDL_WaitEvent(&event)) {
+	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
+	do {
 		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
 			break;
 		} else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE) {
@@ -196,6 +197,6 @@ int main(int argc, char **argv) {
 		lut(argv[lutindex]);
 		glDrawArrays(GL_QUADS, 0, 8);
 		SDL_GL_SwapBuffers();
-	}
+	} while (SDL_WaitEvent(&event));
 	SDL_Quit();
 }
