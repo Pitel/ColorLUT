@@ -1,5 +1,5 @@
-CFLAGS=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-pointer -std=gnu99 `sdl-config --cflags` `pkg-config --cflags glew gl SDL_image`
-LDLIBS=`sdl-config --libs` `pkg-config --libs glew gl SDL_image`
+CFLAGS=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-pointer -std=gnu99 `sdl-config --cflags` `pkg-config --cflags glew gl SDL_image libavcodec libavformat libavutil libswscale`
+LDLIBS=`sdl-config --libs` `pkg-config --libs glew gl SDL_image libavcodec libavformat libavutil libswscale`
 
 #CVT
 #LDFLAGS=-L/usr/lib

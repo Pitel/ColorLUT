@@ -14,7 +14,7 @@
 	#include "SDL_thread.h"
 	#include "ffmpeg_lut.h"
 	#include "SDL_mutex.h"
-	
+
 SDL_Thread *thread = NULL;
 SDL_Event ev;
 SDL_mutex  *lock;
@@ -24,7 +24,7 @@ static int runThread(void *data)
 	//SDL_mutex *lock = (SDL_mutex *)data;
 	play(lock);
 }
-    
+
 void start_video_thread()
 {
 	lock = SDL_CreateMutex();
@@ -133,9 +133,9 @@ void lut(TLuts lut_table) {
 void get_texture(SDL_Surface *surface)
 {
 	SDL_mutexP(lock);
-	
+
 //	SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((*bmp_pointer)->pixels, (*bmp_pointer)->w, (*bmp_pointer)->h, 32,(*bmp_pointer)->pitches, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-	
+
 	//Texture
 	GLuint texture, format;
 	/*if (surface->format->BytesPerPixel == 4) {
@@ -153,7 +153,7 @@ void get_texture(SDL_Surface *surface)
 	} else {
 		fprintf(stderr, "The image is not truecolor!\n");
 		SDL_Quit();
-		#ifdef FFPLAYER 
+		#ifdef FFPLAYER
 			end_video_thread();
 		#endif
 		exit(EXIT_FAILURE);
@@ -162,35 +162,35 @@ void get_texture(SDL_Surface *surface)
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	
-	
+
+
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-	
+
 	*/
-	
+
 	glGenTextures(1, &texture);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBindTexture(GL_TEXTURE_2D, texture);
-	
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	
+
 	glTexImage2D( GL_TEXTURE_2D, 0, 3, pCodecCtx_g->width, pCodecCtx_g->height, 0, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecCtx_g->width, pCodecCtx_g->height, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecCtx_g->width, pCodecCtx_g->height, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
-	//glTexImage2D(GL_TEXTURE_2D, 0, 4 , pCodecCtx_g->width, pCodecCtx_g->height, 0, GL_RGB, GL_UNSIGNED_INT, pFrameRGB_g->data[0]);
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, 512, 256, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0]);
-	//glGenerateMipmap(GL_TEXTURE_2D);
-	
+//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecCtx_g->width, pCodecCtx_g->height, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
+//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecCtx_g->width, pCodecCtx_g->height, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
+//	glTexImage2D(GL_TEXTURE_2D, 0, 4 , pCodecCtx_g->width, pCodecCtx_g->height, 0, GL_RGB, GL_UNSIGNED_INT, pFrameRGB_g->data[0]);
+//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, 512, 256, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0]);
+//	glGenerateMipmap(GL_TEXTURE_2D);
+
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
-	
-	
+
+
 	SDL_mutexV(lock);
-	
+
 }
 
 
@@ -205,16 +205,16 @@ int main(int argc, char **argv) {
 		printf("Example: colorLUT input.png -s 2 lut1.png lut2.png -s 16 lut3.png lut4.png\n");
 		return EXIT_FAILURE;
 	}
-	
-	
-	#ifndef FFPLAYER	
+
+
+	#ifndef FFPLAYER
 	char *input_name = argv[1];
 	#endif
-	
+
 	int input_luts_size = 0;
-	TLuts input_luts[argc - 2];	
+	TLuts input_luts[argc - 2];
 	int lsize = 16; //defaul lookup table size
-	
+
 	for(int i = 2; i < argc; i++)
 	{
 		if (!strcmp(argv[i],"-s"))
@@ -222,13 +222,13 @@ int main(int argc, char **argv) {
 			lsize = atoi(argv[++i]);
 			i++;
 		}
-		
+
 		if(i > argc)
 		{
 			printf("ERROR: No lookup table image?\n");
 			return EXIT_FAILURE;
 		}
-		
+
 		input_luts[input_luts_size].lut_name = argv[i];
 		input_luts[input_luts_size].lut_size = lsize;
 		input_luts_size++;
@@ -239,16 +239,16 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
 		return EXIT_FAILURE;
 	}
-	
-	#ifdef FFPLAYER	
+
+	#ifdef FFPLAYER
 		fffile = argv[1];
 		start_video_thread();
-		
+
 		while(pFrameRGB_g == NULL)
 			usleep(50*1000);
 	#endif
 
-	
+
 	#ifndef FFPLAYER
 	//Load image
 	SDL_Surface * surface = IMG_Load(input_name);
@@ -265,7 +265,7 @@ int main(int argc, char **argv) {
 		SDL_Quit();
 		return EXIT_FAILURE;
 	}
-	
+
 
 
 	SDL_WM_SetCaption("colorLUT", NULL);
@@ -300,20 +300,20 @@ int main(int argc, char **argv) {
 	glUseProgram(program);
 
 	get_texture(surface);
-	
-	glUniform2f(glGetUniformLocation(program, "resolution"), pCodecCtx_g->width, pCodecCtx_g->height);	
+
+	glUniform2f(glGetUniformLocation(program, "resolution"), pCodecCtx_g->width, pCodecCtx_g->height);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
 	glActiveTexture(GL_TEXTURE1);
 	glUniform1i(glGetUniformLocation(program, "lut"), 1);
-	
+
 	//Geometry
 	glEnable(GL_VERTEX_ARRAY);
 	const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
 	glVertexPointer(2, GL_SHORT, 0, vertices);
 
 	//Event loop
-	int lutindex = 0;	
-	printf("LUT: %s\tsize: %d\n", input_luts[lutindex].lut_name,input_luts[lutindex].lut_size);	
+	int lutindex = 0;
+	printf("LUT: %s\tsize: %d\n", input_luts[lutindex].lut_name,input_luts[lutindex].lut_size);
 	SDL_Event event;
 	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 	do {
@@ -324,33 +324,31 @@ int main(int argc, char **argv) {
 			if (lutindex >= input_luts_size) {
 				lutindex = 0;
 			}
-			
-			printf("LUT: %s\tsize: %d\n", input_luts[lutindex].lut_name,input_luts[lutindex].lut_size);			
+
+			printf("LUT: %s\tsize: %d\n", input_luts[lutindex].lut_name,input_luts[lutindex].lut_size);
 		}
 
-		#ifdef FFPLAYER 
+		#ifdef FFPLAYER
 		if (event.type == SDL_USEREVENT)
 			get_texture(surface);
 		#endif
-		
+
 		lut(input_luts[lutindex]);
-		
+
 		GLint lsize_loc = glGetUniformLocation(program,"lut_size");
 		glUniform1i(lsize_loc,input_luts[lutindex].lut_size);
-		
+
 		glActiveTexture(GL_TEXTURE1);
 		glDrawArrays(GL_QUADS, 0, 8);
 		SDL_GL_SwapBuffers();
 	} while (SDL_WaitEvent(&event));
-	
-	#ifdef FFPLAYER 
+
+	#ifdef FFPLAYER
 		end_video_thread();
 	#endif
-	
+
 	if(surface != NULL)
 		SDL_FreeSurface(surface);
-	
-	SDL_Quit();
-	
 
+	SDL_Quit();
 }
