@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <stdbool.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <GL/glew.h>
 
-#define FFPLAYER
+//#define FFPLAYER
 
 #ifdef FFPLAYER
 	#include <unistd.h>
@@ -15,14 +16,19 @@
 	#include "ffmpeg_lut.h"
 	#include "SDL_mutex.h"
 
+	#define UNUSED(expr) do { (void)(expr); } while (0)
+
+
 SDL_Thread *thread = NULL;
 SDL_Event ev;
 SDL_mutex  *lock;
 
-static int runThread(void *data)
+static int runThread(void * u)
 {
-	//SDL_mutex *lock = (SDL_mutex *)data;
 	play(lock);
+
+	UNUSED(u);
+	return 0;
 }
 
 void start_video_thread()
@@ -33,17 +39,20 @@ void start_video_thread()
 
 void end_video_thread()
 {
-	//SDL_DestroyMutex(lock);
+	SDL_DestroyMutex(lock);
 	SDL_KillThread(thread);
 }
 #endif
 
-GLuint program;
+GLuint program, texture_img;
+bool generated = false;
+
 
 typedef struct luts {
 	char * lut_name;
 	int lut_size;
 } TLuts;
+
 
 char *file2string(const char *path) {
 	FILE *fd;
@@ -132,13 +141,15 @@ void lut(TLuts lut_table) {
 
 void get_texture(SDL_Surface *surface)
 {
-	SDL_mutexP(lock);
 
-//	SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((*bmp_pointer)->pixels, (*bmp_pointer)->w, (*bmp_pointer)->h, 32,(*bmp_pointer)->pitches, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+	#ifdef FFPLAYER
+		SDL_mutexP(lock);
+	#endif
 
+	#ifndef FFPLAYER
 	//Texture
-	GLuint texture, format;
-	/*if (surface->format->BytesPerPixel == 4) {
+	GLuint format;
+	if (surface->format->BytesPerPixel == 4) {
 		if (surface->format->Rmask == 0x000000ff) {
 			format = GL_RGBA;
 		} else {
@@ -158,38 +169,60 @@ void get_texture(SDL_Surface *surface)
 		#endif
 		exit(EXIT_FAILURE);
 	}
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
-	glGenerateMipmap(GL_TEXTURE_2D);
 
+	if(!generated)
+	{
+		glGenTextures(1, &texture_img);
+	}
 
+	glBindTexture(GL_TEXTURE_2D, texture_img);
 	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(program, "tex"), 0);
 
-	*/
+	if(!generated)
+		glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+	else
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surface->w, surface->h, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels );
 
-	glGenTextures(1, &texture);
-	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE1);
+
+
+	if(!generated)
+		generated = true;
+	#endif
+
+
+	#ifdef FFPLAYER
+	if(!generated)
+	{
+		glGenTextures(1, &texture_img);
+	}
+
+	glBindTexture(GL_TEXTURE_2D, texture_img);
+	glActiveTexture(GL_TEXTURE0);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-	glTexImage2D( GL_TEXTURE_2D, 0, 3, pCodecCtx_g->width, pCodecCtx_g->height, 0, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
-//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecCtx_g->width, pCodecCtx_g->height, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
-//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecCtx_g->width, pCodecCtx_g->height, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
-//	glTexImage2D(GL_TEXTURE_2D, 0, 4 , pCodecCtx_g->width, pCodecCtx_g->height, 0, GL_RGB, GL_UNSIGNED_INT, pFrameRGB_g->data[0]);
-//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, 512, 256, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0]);
-//	glGenerateMipmap(GL_TEXTURE_2D);
+	if(!generated)
+		glTexImage2D( GL_TEXTURE_2D, 0, 3, pCodecCtx_g->width, pCodecCtx_g->height, 0, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
+	else
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, pCodecCtx_g->width, pCodecCtx_g->height, GL_RGB, GL_UNSIGNED_BYTE, pFrameRGB_g->data[0] );
 
-	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(program, "tex"), 0);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE1);
 
+	if(!generated)
+		generated = true;
 
 	SDL_mutexV(lock);
+
+	UNUSED(surface);
+	#endif
 
 }
 
@@ -197,18 +230,36 @@ void get_texture(SDL_Surface *surface)
 int main(int argc, char **argv) {
 	//Help
 	if (argc < 3) {
-		printf("Usage: colorLUT <image> [-s n] <LUTs>...\n");
-		printf("--------------------------------------\n");
-		printf("<image> - input image\n");
-		printf("<LUTs> - images of lookup table\n");
-		printf("-s n - 'n' = size of lookup table (default 16)\n\n");
-		printf("Example: colorLUT input.png -s 2 lut1.png lut2.png -s 16 lut3.png lut4.png\n");
+		#ifndef FFPLAYER
+			printf("Usage: colorLUT <image> [-s n] <LUTs>...\n");
+			printf("--------------------------------------\n");
+			printf("<image> - input image\n");
+			printf("-s n - 'n' = size of lookup table (default 16)\n");
+			printf("<LUTs> - images of lookup table\n\n");
+			printf("Example: colorLUT input.png -s 2 lut1.png lut2.png -s 16 lut3.png lut4.png\n");
+		#endif
+
+		#ifdef FFPLAYER
+			printf("Usage: colorLUT <movie> [-s n] <LUTs>...\n");
+			printf("--------------------------------------\n");
+			printf("<movie> - input movie (.avi, .mpg, ...)\n");
+			printf("-s n - 'n' = size of lookup table (default 16)\n");
+			printf("<LUTs> - images of lookup table\n\n");
+			printf("Example: colorLUT input.avi -s 2 lut1.png lut2.png -s 16 lut3.png lut4.png\n");
+		#endif
+
+
 		return EXIT_FAILURE;
 	}
 
+	//SDL init
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVERYTHING) < 0) {
+		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
+		return EXIT_FAILURE;
+	}
 
 	#ifndef FFPLAYER
-	char *input_name = argv[1];
+		char *input_name = argv[1];
 	#endif
 
 	int input_luts_size = 0;
@@ -234,14 +285,8 @@ int main(int argc, char **argv) {
 		input_luts_size++;
 	}
 
-	//SDL init
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
-		return EXIT_FAILURE;
-	}
-
 	#ifdef FFPLAYER
-		fffile = argv[1];
+		input_movie = argv[1];
 		start_video_thread();
 
 		while(pFrameRGB_g == NULL)
@@ -257,16 +302,23 @@ int main(int argc, char **argv) {
 		SDL_Quit();
 		return EXIT_FAILURE;
 	}
-	#endif
 
 	//Window and OpenGL init
-	if (SDL_SetVideoMode(pCodecCtx_g->width, pCodecCtx_g->height, 0, SDL_OPENGL) == NULL) {
+	if (SDL_SetVideoMode(surface->w, surface->h, 0, SDL_OPENGL) == NULL) {
 		fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
 		SDL_Quit();
 		return EXIT_FAILURE;
 	}
+	#endif
 
-
+	#ifdef FFPLAYER
+	//Window and OpenGL init
+	if (SDL_SetVideoMode(pCodecCtx_g->width-10, pCodecCtx_g->height, 0, SDL_OPENGL) == NULL) {
+		fprintf(stderr, "Unable to create OpenGL screen: %s\n", SDL_GetError());
+		SDL_Quit();
+		return EXIT_FAILURE;
+	}
+	#endif
 
 	SDL_WM_SetCaption("colorLUT", NULL);
 
@@ -299,10 +351,27 @@ int main(int argc, char **argv) {
 
 	glUseProgram(program);
 
+
+	#ifdef FFPLAYER
+		//dummy surface for get_texture
+		SDL_Surface *surface = NULL;
+	#endif
+
 	get_texture(surface);
 
+	#ifdef FFPLAYER
 	glUniform2f(glGetUniformLocation(program, "resolution"), pCodecCtx_g->width, pCodecCtx_g->height);
+	#endif
+
+
+	#ifndef FFPLAYER
+	glUniform2f(glGetUniformLocation(program, "resolution"), surface->w, surface->h);
+	#endif
+
+
+	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
+
 	glActiveTexture(GL_TEXTURE1);
 	glUniform1i(glGetUniformLocation(program, "lut"), 1);
 
