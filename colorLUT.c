@@ -108,13 +108,13 @@ int main(int argc, char **argv) {
 		printf("Example: colorLUT input.png -s 2 lut1.png lut2.png -s 16 lut3.png lut4.png\n");
 		return EXIT_FAILURE;
 	}
-	
+
 	char *input_name = argv[1];
-	
+
 	int input_luts_size = 0;
-	TLuts input_luts[argc - 2];	
+	TLuts input_luts[argc - 2];
 	int lsize = 16; //defaul lookup table size
-	
+
 	for(int i = 2; i < argc; i++)
 	{
 		if (!strcmp(argv[i],"-s"))
@@ -122,17 +122,17 @@ int main(int argc, char **argv) {
 			lsize = atoi(argv[++i]);
 			i++;
 		}
-		
+
 		if(i > argc)
 		{
 			printf("ERROR: No lookup table image?\n");
 			return EXIT_FAILURE;
 		}
-		
+
 		input_luts[input_luts_size].lut_name = argv[i];
 		input_luts[input_luts_size].lut_size = lsize;
 		input_luts_size++;
-		
+
 	}
 
 	//SDL init
@@ -236,10 +236,10 @@ int main(int argc, char **argv) {
 		}
 		printf("LUT: %s\tsize: %d\n", input_luts[lutindex].lut_name,input_luts[lutindex].lut_size);
 		lut(input_luts[lutindex]);
-		
+
 		GLint lsize_loc = glGetUniformLocation(program,"lut_size");
 		glUniform1i(lsize_loc,input_luts[lutindex].lut_size);
-		
+
 		glDrawArrays(GL_QUADS, 0, 8);
 		SDL_GL_SwapBuffers();
 	} while (SDL_WaitEvent(&event));
