@@ -17,7 +17,7 @@ Příklady spuštění:
 * `colorLUT input.png -s 2 lut1.png lut2.png -s 8 lut3.png lut4.png`
 * `colorLUT input.avi lut.jpg lut1.jpg`
 
-Poznámka: Pro překlad v CVT FIT použijte příkaz `make cvt`
+Poznámka: Pro překlad v CVT FIT je potřeba v `Makefile` odkomentovat 3 označené řádky!
 
 Zdroje
 ------
