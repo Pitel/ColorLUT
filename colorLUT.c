@@ -226,7 +226,6 @@ void get_texture(SDL_Surface *surface)
 
 }
 
-
 int main(int argc, char **argv) {
 	//Help
 	if (argc < 3) {
@@ -248,7 +247,6 @@ int main(int argc, char **argv) {
 			printf("Example: colorLUT input.avi -s 2 lut1.png lut2.png -s 16 lut3.png lut4.png\n");
 		#endif
 
-
 		return EXIT_FAILURE;
 	}
 
@@ -264,7 +262,7 @@ int main(int argc, char **argv) {
 
 	int input_luts_size = 0;
 	TLuts input_luts[argc - 2];
-	int lsize = 16; //defaul lookup table size
+	int lsize = 16; //default lookup table size
 
 	for(int i = 2; i < argc; i++)
 	{

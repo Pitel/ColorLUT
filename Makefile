@@ -9,7 +9,7 @@ CC=gcc
 
 
 CFLAGS_FF=`pkg-config --cflags libavcodec libavformat libavutil libswscale`
-LDLIBS_FF=`pkg-config --libs libavcodec libavformat libavutil libswscale`
+LDLIBS_FF=`pkg-config --libs libavcodec libavformat libavutil libswscale` -lm
 
 all: colorLUT
 

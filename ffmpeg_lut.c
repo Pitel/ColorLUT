@@ -7,7 +7,7 @@ int play(SDL_mutex *lock)
 
     AVFormatContext *pFormatCtx;
 
-    if(avformat_open_input(&pFormatCtx, input_movie, NULL, 0)!=0)
+    if(av_open_input_file(&pFormatCtx, input_movie, NULL, 0,NULL)!=0)
         return -1;
 
     if(av_find_stream_info(pFormatCtx)<0)
@@ -65,6 +65,9 @@ int play(SDL_mutex *lock)
     int frameFinished;
     AVPacket packet;
 
+    float sync = 0.0;
+    int frame_plus = 0;
+
     i=0;
     while(av_read_frame(pFormatCtx, &packet)>=0)
     {
@@ -100,7 +103,18 @@ int play(SDL_mutex *lock)
 
 				SDL_mutexV(lock);
 
-                SDL_Delay(pCodecCtx->time_base.den);
+				sync += (float)1000/pCodecCtx->time_base.den - floor((float)1000/pCodecCtx->time_base.den);
+
+				printf("%f \n",sync);
+
+				if(sync > 1.0)
+				{
+					sync = sync - floor(sync);
+					frame_plus = 1;
+				}
+
+                SDL_Delay(1000/(pCodecCtx->time_base.den+frame_plus));
+				frame_plus = 0;
 
 				SDL_Event ev;
 				ev.type = SDL_USEREVENT;

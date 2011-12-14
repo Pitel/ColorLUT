@@ -1,8 +1,9 @@
 #ifndef FFMPEG_LUT_H
 #define FFMPEG_LUT_H
 
-
 #include "SDL_mutex.h"
+
+#include <math.h>
 
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
