@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
-
 #include <stdbool.h>
+
 #include <SDL.h>
 #include <SDL_image.h>
 #include <GL/glew.h>
@@ -49,8 +49,13 @@ void start_video_thread()
 //Korektni ukonceni
 void end_video_thread()
 {
+	int stat;
+	SDL_WaitThread(thread, &stat);
+
+	if(stat != 0)
+		SDL_KillThread(thread);
+
 	SDL_DestroyMutex(lock);
-	SDL_KillThread(thread);
 }
 
 
@@ -366,13 +371,17 @@ int main(int argc, char **argv) {
 	const short vertices[] = {-1,1, 1,1, 1,-1, -1,-1};
 	glVertexPointer(2, GL_SHORT, 0, vertices);
 
-	//Event loop
 	int lutindex = 0;
 	printf("LUT: %s\tsize: %d\n", input_luts[lutindex].lut_name,input_luts[lutindex].lut_size);
 	SDL_Event event;
 	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
+	//Event loop
 	do {
-		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) {
+		if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE)
+		{
+			SDL_mutexP(lock);
+				loop = false;
+			SDL_mutexV(lock);
 			break;
 		} else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE) {
 			lutindex++;

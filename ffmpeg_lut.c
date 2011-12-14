@@ -62,75 +62,91 @@ int play(SDL_mutex *lock)
                    pCodecCtx->width, pCodecCtx->height);
 
 
-    int frameFinished;
-    AVPacket packet;
 
-    float sync = 0.0;
-    int frame_plus = 0;
+	loop = true;
 
-    i=0;
-    while(av_read_frame(pFormatCtx, &packet)>=0)
-    {
-        if(packet.stream_index==videoStream)
-        {
-            avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+	while(loop)
+	{
+		av_seek_frame(pFormatCtx,videoStream, 0, AVSEEK_FLAG_FRAME);
 
-            if(frameFinished)
-            {
+		int frameFinished;
+		AVPacket packet;
 
-				SDL_mutexP(lock);
+		float sync = 0.0;
+		int frame_plus = 0;
 
-                static int sws_flags = SWS_BICUBIC;
-                struct SwsContext *img_convert_ctx;
-                img_convert_ctx = sws_getContext(
-                                      pCodecCtx->width,
-                                      pCodecCtx->height,
-                                      pCodecCtx->pix_fmt,
-                                      pCodecCtx->width,
-                                      pCodecCtx->height,
-                                      PIX_FMT_RGB24,
-                                      sws_flags, NULL, NULL, NULL);
-
-				if(img_convert_ctx == NULL) {
-						fprintf(stderr, "Cannot initialize the conversion context!\n");
-				}
-
-                sws_scale(img_convert_ctx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameRGB->data, pFrameRGB->linesize);
-                sws_freeContext(img_convert_ctx);
-
-
-				pFrameRGB_g = pFrameRGB;
-
+		i=0;
+		while(av_read_frame(pFormatCtx, &packet)>=0)
+		{
+			SDL_mutexP(lock);
+			if(!loop)
+			{
 				SDL_mutexV(lock);
+				break;
+			}
+			SDL_mutexV(lock);
 
-				sync += (float)1000/pCodecCtx->time_base.den - floor((float)1000/pCodecCtx->time_base.den);
+			if(packet.stream_index==videoStream)
+			{
+				avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
 
-				if(sync > 1.0)
+				if(frameFinished)
 				{
-					sync = sync - floor(sync);
-					frame_plus = 1;
+
+					SDL_mutexP(lock);
+
+					static int sws_flags = SWS_BICUBIC;
+					struct SwsContext *img_convert_ctx;
+					img_convert_ctx = sws_getContext(
+										  pCodecCtx->width,
+										  pCodecCtx->height,
+										  pCodecCtx->pix_fmt,
+										  pCodecCtx->width,
+										  pCodecCtx->height,
+										  PIX_FMT_RGB24,
+										  sws_flags, NULL, NULL, NULL);
+
+					if(img_convert_ctx == NULL) {
+							fprintf(stderr, "Cannot initialize the conversion context!\n");
+					}
+
+					sws_scale(img_convert_ctx, (const uint8_t * const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameRGB->data, pFrameRGB->linesize);
+					sws_freeContext(img_convert_ctx);
+
+
+					pFrameRGB_g = pFrameRGB;
+
+					SDL_mutexV(lock);
+
+					sync += (float)1000/pCodecCtx->time_base.den - floor((float)1000/pCodecCtx->time_base.den);
+
+					if(sync > 1.0)
+					{
+						sync = sync - floor(sync);
+						frame_plus = 1;
+					}
+
+					SDL_Delay(1000/(pCodecCtx->time_base.den+frame_plus));
+					frame_plus = 0;
+
+					SDL_Event ev;
+					ev.type = SDL_USEREVENT;
+					SDL_PushEvent(&ev);
+
 				}
-
-                SDL_Delay(1000/(pCodecCtx->time_base.den+frame_plus));
-				frame_plus = 0;
-
-				SDL_Event ev;
-				ev.type = SDL_USEREVENT;
-				SDL_PushEvent(&ev);
-
-            }
-        }
-        av_free_packet(&packet);
-    }
+			}
+			av_free_packet(&packet);
+		}
+	}
 
     av_free(buffer);
     av_free(pFrameRGB);
 
     av_free(pFrame);
-
     avcodec_close(pCodecCtx);
 
     av_close_input_file(pFormatCtx);
+
 
     return 0;
 }

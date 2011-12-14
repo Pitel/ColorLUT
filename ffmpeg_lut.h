@@ -4,6 +4,7 @@
 #include "SDL_mutex.h"
 
 #include <math.h>
+#include <stdbool.h>
 
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -12,6 +13,7 @@
 
 
 char *input_movie;
+bool loop;
 
 AVCodecContext *pCodecCtx_g;
 AVFrame *pFrameRGB_g;
