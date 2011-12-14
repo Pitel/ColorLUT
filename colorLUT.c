@@ -276,10 +276,12 @@ int main(int argc, char **argv) {
 
 	char *pch = strrchr(input_name,'.') + 1;
 	int len = strlen(pch);
-	char ext[len];
+	char ext[len+1];
 
 	for(int i = 0; i < len; i++)
 		ext[i] = (char) tolower(pch[i]);
+
+	ext[len] = '\0';
 
 	if(!strcmp(ext,"avi") || !strcmp(ext,"mpg") || !strcmp(ext,"mpeg"))
 		ffplayer = true;
