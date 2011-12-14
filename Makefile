@@ -14,18 +14,12 @@ LDLIBS_FF=`pkg-config --libs libavcodec libavformat libavutil libswscale` -lm
 
 all: colorLUT
 
-.PHONY: clean pack ffmpeg cvt ffmpeg_cvt
+.PHONY: clean pack cvt
 
 colorLUT: 
-	$(CC) $(LDLIBS) $(CFLAGS) colorLUT.c -o colorLUT
-
-cvt: 
-	$(CC)  $(LDFLAGS_CVT) $(LDLIBS_CVT) $(CFLAGS_CVT) colorLUT.c -o colorLUT
-
-ffmpeg: 
 	$(CC) -DFFPLAYER $(LDLIBS) $(CFLAGS) $(LDLIBS_FF) $(CFLAGS_FF) ffmpeg_lut.c ffmpeg_lut.h colorLUT.c -o colorLUT
 
-ffmpeg_cvt: 
+cvt: 
 	$(CC) -DFFPLAYER $(LDFLAGS_CVT) $(LDLIBS_CVT) $(CFLAGS_CVT) $(LDLIBS_FF) $(CFLAGS_FF) ffmpeg_lut.c ffmpeg_lut.h colorLUT.c -o colorLUT
 
 clean:
