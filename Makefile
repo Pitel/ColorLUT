@@ -2,9 +2,9 @@ CFLAGS=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-point
 LDLIBS=`sdl-config --libs` `pkg-config --libs glew gl SDL_image libavcodec libavformat libavutil libswscale`
 
 #CVT
-#CFLAGS_CVT=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-pointer -std=gnu99 `sdl-config --cflags`
-#LDFLAGS_CVT=-L/usr/lib
-#LDLIBS_CVT=`sdl-config --libs` -lSDL_image -lGL -lGLEW
+#CFLAGS=-O2 -pipe -pedantic-errors -Wall -Wextra -march=native -fomit-frame-pointer -std=gnu99 `sdl-config --cflags`
+#LDFLAGS=-L/usr/lib
+#LDLIBS=`sdl-config --libs` -lSDL_image -lGL -lGLEW -lavcodec -lavformat -lavutil -lswscale
 
 all: colorLUT
 
