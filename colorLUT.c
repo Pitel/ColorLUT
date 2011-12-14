@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
 		#ifdef FFPLAYER
 			printf("Usage: colorLUT <movie> [-s n] <LUTs>...\n");
 			printf("--------------------------------------\n");
-			printf("<movie> - input movie (.avi, .mpg, ...)\n");
+			printf("<movie> - input movie (.avi or .mpg)\n");
 			printf("-s n - 'n' = size of lookup table (default 16)\n");
 			printf("<LUTs> - images of lookup table\n\n");
 			printf("Example: colorLUT input.avi -s 2 lut1.png lut2.png -s 16 lut3.png lut4.png\n");
