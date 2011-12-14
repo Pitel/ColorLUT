@@ -8,7 +8,7 @@ LDLIBS=`sdl-config --libs` `pkg-config --libs glew gl SDL_image libavcodec libav
 
 all: colorLUT
 
-.PHONY: clean pack cvt
+.PHONY: clean pack
 
 colorLUT: ffmpeg_lut.o
 
