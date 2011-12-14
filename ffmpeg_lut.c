@@ -105,8 +105,6 @@ int play(SDL_mutex *lock)
 
 				sync += (float)1000/pCodecCtx->time_base.den - floor((float)1000/pCodecCtx->time_base.den);
 
-				printf("%f \n",sync);
-
 				if(sync > 1.0)
 				{
 					sync = sync - floor(sync);
