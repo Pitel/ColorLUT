@@ -10,7 +10,7 @@ all: colorLUT
 
 .PHONY: clean pack cvt
 
-colorLUT: ffmpeg_lut.c
+colorLUT: ffmpeg_lut.o
 
 clean:
 	$(RM) colorLUT *.zip *.o
