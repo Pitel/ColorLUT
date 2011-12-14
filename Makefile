@@ -19,7 +19,7 @@ colorLUT:
 	$(CC) $(LDFLAGS)$(LDLIBS) $(CFLAGS) colorLUT.c -o colorLUT
 
 cvt: 
-	$(CC) $(LDFLAGS) $(LDLIBS) $(LDFLAGS_CVT)$(LDLIBS_CVT) $(CFLAGS) colorLUT.c -o colorLUT
+	$(CC) $(LDFLAGS) $(LDLIBS) $(LDFLAGS_CVT) $(LDLIBS_CVT) $(CFLAGS) colorLUT.c -o colorLUT
 
 ffmpeg: 
 	$(CC) $(LDFLAGS)-DFFPLAYER $(LDLIBS) $(CFLAGS) $(LDLIBS_FF) $(CFLAGS_FF) ffmpeg_lut.c ffmpeg_lut.h colorLUT.c -o colorLUT
