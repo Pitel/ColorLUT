@@ -242,10 +242,12 @@ int main(int argc, char **argv) {
 	}
 
 	SDL_Surface *surface = NULL;
+
 	char *input_name = argv[1];
 
 	int input_luts_size = 0;
 	TLuts input_luts[argc - 2];
+
 	int lsize = 16; //default lookup table size
 
 	for(int i = 2; i < argc; i++)
@@ -388,6 +390,7 @@ int main(int argc, char **argv) {
 
 		GLint lsize_loc = glGetUniformLocation(program,"lut_size");
 		glUniform1i(lsize_loc,input_luts[lutindex].lut_size);
+
 
 		glActiveTexture(GL_TEXTURE1);
 		glDrawArrays(GL_QUADS, 0, 8);
